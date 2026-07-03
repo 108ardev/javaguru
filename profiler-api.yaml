@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info: { title: Profiler API, version: v1.0.0, description: External profiler service contract (CV status update) }
+tags: [ { name: Profiler } ]
+paths:
+  /api/v1/cvs/{cvUuid}:
+    patch:
+      tags: [Profiler]
+      operationId: updateCvStatus
+      parameters:
+        - { name: cvUuid, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CvStatusUpdateRequest' } } }
+      responses:
+        '200':
+          description: OK
+          content: { application/json: { schema: { $ref: '#/components/schemas/CvStatusUpdateResponse' } } }
+components:
+  schemas:
+    CvStatusUpdateRequest:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string }
+    CvStatusUpdateResponse:
+      type: object
+      properties:
+        uuid: { type: string, format: uuid }
+        status: { type: string }
