@@ -1,0 +1,138 @@
+openapi: 3.0.3
+info:
+  title: Resignation API
+  version: v1.0.0
+  description: REST API of the resignation service
+tags:
+  - name: Resignation
+paths:
+  /api/v1/resignation/request:
+    post:
+      tags: [Resignation]
+      operationId: createResignation
+      summary: Create a resignation request and run the synchronous approval flow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateResignationRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CreateResignationResponse' }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+  /api/v1/resignation/request/{requestId}:
+    get:
+      tags: [Resignation]
+      operationId: getResignation
+      summary: Get a resignation request by id
+      parameters:
+        - { name: requestId, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GetResignationResponse' }
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+    patch:
+      tags: [Resignation]
+      operationId: updateResignationStatus
+      summary: Change the status of a resignation request
+      parameters:
+        - { name: requestId, in: path, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateResignationStatusRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UpdateResignationStatusResponse' }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+components:
+  schemas:
+    ResignationStatus:
+      type: string
+      enum: [CREATED, BUDGET_ALLOCATED, BUDGET_FAILED, SECURITY_PASSED, SECURITY_FAILED, APPROVED, SUCCESS, CANCEL, FINISHED]
+    CreateResignationRequest:
+      type: object
+      required: [name, surname, cvUuid, budget]
+      properties:
+        name: { type: string, minLength: 1, example: Ivan }
+        surname: { type: string, minLength: 1, example: Ivanov }
+        cvUuid: { type: string, format: uuid }
+        budget: { type: number, minimum: 0, example: 10000.00 }
+    CreateResignationResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        cvUuid: { type: string, format: uuid }
+        budget: { type: number }
+        status: { $ref: '#/components/schemas/ResignationStatus' }
+    GetResignationResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        surname: { type: string }
+        cvUuid: { type: string, format: uuid }
+        budget: { type: number }
+        status: { $ref: '#/components/schemas/ResignationStatus' }
+    UpdateResignationStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: '#/components/schemas/ResignationStatus' }
+    UpdateResignationStatusResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        surname: { type: string }
+        cvUuid: { type: string, format: uuid }
+        budget: { type: number }
+        status: { $ref: '#/components/schemas/ResignationStatus' }
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode: { type: integer, format: int32 }
+        message: { type: string }
+        timeStamp: { type: string, format: date-time }
